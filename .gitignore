@@ -1,0 +1,28 @@
+Library/
+Temp/
+obj/
+.vs/
+.idea/
+.vscode/
+UIElementsSchema/
+
+WwiseUnityIntegration*
+_ReSharper.Caches
+.DS_Store
+*.csproj
+*.sln*
+*.userprefs
+
+Assets/StreamingAssets
+Assets/StreamingAssets.meta
+Assets/Editor Default Resources
+Assets/Editor Default Resources.meta
+Assets/StreamingAssets.meta
+Assets/App/ThirdParty/Channel
+Assets/App/ThirdParty/Channel.meta
+Assets/Plugins/UnityChannel
+Assets/Plugins/UnityChannel.meta
+Assets/Plugins/UnityPurchasing
+Assets/Plugins/UnityPurchasing.meta
+Assets/Plugins/UDP
+Assets/Plugins/UDP.meta
