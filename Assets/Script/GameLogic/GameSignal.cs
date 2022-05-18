@@ -12,4 +12,6 @@ public delegate void Signal_Battle__Play(GameModel model);
 
 public delegate void Signal_Battle__RePlay();
 
+public delegate void Signal_Battle__GameStart();
+
 public delegate void Signal_Battle__GameEnd(Player victory);

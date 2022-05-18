@@ -10,6 +10,8 @@ public class UIPiece : MonoBehaviour
     public Image Image;
     public Button Button;
     public RectTransform RectTrans;
+    public Image ImageX;
+    public Image ImageO;
 
     private int _indexX;
     private int _indexY;
@@ -27,13 +29,16 @@ public class UIPiece : MonoBehaviour
         switch (state)
         {
             case PieceState.Empty:
-                Image.color = Color.white;
+                ImageX.gameObject.SetActive(false);
+                ImageO.gameObject.SetActive(false);
                 break;
             case PieceState.Attacker:
-                Image.color = Color.red;
+                ImageX.gameObject.SetActive(false);
+                ImageO.gameObject.SetActive(true);
                 break;
             case PieceState.Defender:
-                Image.color = Color.green;
+                ImageX.gameObject.SetActive(true);
+                ImageO.gameObject.SetActive(false);
                 break;
         }
     }

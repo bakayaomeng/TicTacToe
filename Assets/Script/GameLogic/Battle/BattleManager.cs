@@ -15,8 +15,8 @@ public class BattleManager : IDisposable
     private int _curRound;
     private int _maxRound;
 
-    private Player Player1;
-    private Player Player2;
+    private Player _player1;
+    private Player _player2;
 
     private Player Attacker;
     private Player Defender;
@@ -24,6 +24,8 @@ public class BattleManager : IDisposable
     public int CurRound => _curRound;
     public GameModel GameModel => _gameModel;
     public PieceState[,] ChessBoard => _chessBoard;
+    public Player Player1 => _player1;
+    public Player Player2 => _player2;
 
     public BattleManager()
     {
@@ -126,29 +128,33 @@ public class BattleManager : IDisposable
 
         if(_gameModel == GameModel.Pvp)
         {
-            Player1.BattleStart(Role.Attacker);
-            Player2.BattleStart(Role.Defender);
+            Attacker = _player1;
+            Defender = _player2;
+            _player1.BattleStart(Role.Attacker);
+            _player2.BattleStart(Role.Defender);
         }
         else
         {
             int val = UnityEngine.Random.Range(0,100);
             if(val > 50)
             {
-                Attacker = Player1;
-                Defender = Player2;
-                Player1.BattleStart(Role.Attacker);
-                Player2.BattleStart(Role.Defender);
+                Attacker = _player1;
+                Defender = _player2;
+                _player1.BattleStart(Role.Attacker);
+                _player2.BattleStart(Role.Defender);
             }
             else
             {
-                Attacker = Player2;
-                Defender = Player1;
-                Player1.BattleStart(Role.Defender);
-                Player2.BattleStart(Role.Attacker);
+                Attacker = _player2;
+                Defender = _player1;
+                _player1.BattleStart(Role.Defender);
+                _player2.BattleStart(Role.Attacker);
             }
         }
 
         Attacker.AllocationRound();
+
+        Singleton<SignalManager>.Get().Find<Signal_Battle__GameStart>()?.Invoke();
     }
 
     private void BattleEnd()
@@ -179,13 +185,13 @@ public class BattleManager : IDisposable
 
         if (gameModel == GameModel.Pvp)
         {
-            Player1 = new Player("玩家1", false);
-            Player2 = new Player("玩家2", false);
+            _player1 = new Player("玩家1", false);
+            _player2 = new Player("玩家2", false);
         }
         else if (gameModel == GameModel.Pve)
         {
-            Player1 = new Player("玩家", false);
-            Player2 = new Player("电脑", true);
+            _player1 = new Player("玩家", false);
+            _player2 = new Player("电脑", true);
         }
         
         BattleStart();

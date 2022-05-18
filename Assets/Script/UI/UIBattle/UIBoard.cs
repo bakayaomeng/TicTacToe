@@ -7,6 +7,7 @@ using UnityEngine;
 
 public class UIBoard : MonoBehaviour
 {
+    public UIPiece[] Piece;
     public UIPiece[,] Pieces;
 
     private void Awake()
@@ -14,20 +15,26 @@ public class UIBoard : MonoBehaviour
         Pieces = new UIPiece[GameDefine.BoardSize, GameDefine.BoardSize];
         UIPiece piecePrefab = Resources.Load<UIPiece>(UIDefine.PiecePath);
 
-        for (int i = 0; i < GameDefine.BoardSize; i++)
+        for (int i = 0; i < Piece.Length; i++)
         {
-            for (int j = 0; j < GameDefine.BoardSize; j++)
-            {
-                var piece = GameObject.Instantiate(piecePrefab);
-                piece.name = "UIPiece_" + (i * GameDefine.BoardSize + j + 1);
-                piece.transform.SetParent(this.transform);
-                piece.RectTrans.anchoredPosition = new Vector2(j * 300, -i * 300);
-
-                UIPiece uiPiece = piece.GetComponent<UIPiece>();
-                uiPiece.Init(i,j);
-                Pieces[i, j] = uiPiece;
-            }
+            Piece[i].Init(i % 3, i / 3);
+            Pieces[i % 3, i / 3] = Piece[i];
         }
+
+        //for (int i = 0; i < GameDefine.BoardSize; i++)
+        //{
+        //    for (int j = 0; j < GameDefine.BoardSize; j++)
+        //    {
+        //        var piece = GameObject.Instantiate(piecePrefab);
+        //        piece.name = "UIPiece_" + (i * GameDefine.BoardSize + j + 1);
+        //        piece.transform.SetParent(this.transform);
+        //        piece.RectTrans.anchoredPosition = new Vector2(j * 300, -i * 300);
+
+        //        UIPiece uiPiece = piece.GetComponent<UIPiece>();
+        //        uiPiece.Init(i,j);
+        //        Pieces[i, j] = uiPiece;
+        //    }
+        //}
 
         Singleton<SignalManager>.Get().Subscribe((Signal_Battle__BoardChange)Callback_Battle__BoardChange);
     }

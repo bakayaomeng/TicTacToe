@@ -65,6 +65,16 @@ public class Player : IDisposable
 
         PieceState self = (PieceState)Role;
 
+        //第一手随机出棋
+        if(btMgr.CurRound == 0)
+        {
+            int x = UnityEngine.Random.Range(0, 300) /100;
+            int y = UnityEngine.Random.Range(0, 300) / 100;
+            btMgr.RoundExec(this, x,y);
+            btMgr.RoundEnd();
+            return;
+        }
+
         //判断自己是否可以获胜 是则直接落子取胜
         for (int i = 0; i < 8; i++)
         {
@@ -75,10 +85,10 @@ public class Player : IDisposable
             {
                 int value = GetWeight(board, WinPath[i, j, 0], WinPath[i, j, 1]);
                 weight += value;
-                if(weight == 0)
+                if(value == 0)
                 {
-                    winX = i;
-                    wenY = j;
+                    winX = WinPath[i, j, 0];
+                    wenY = WinPath[i, j, 1];
                 }
             }    
             if(weight == 2)
@@ -99,10 +109,10 @@ public class Player : IDisposable
             {
                 int value = GetWeight(board, WinPath[i, j, 0], WinPath[i, j, 1]);
                 weight += value;
-                if (weight == 0)
+                if (value == 0)
                 {
-                    winX = i;
-                    wenY = j;
+                    winX = WinPath[i, j, 0];
+                    wenY = WinPath[i, j, 1];
                 }
             }
             if (weight == -2)
@@ -112,70 +122,6 @@ public class Player : IDisposable
                 return;
             }
         }
-
-        ////判断自己是否可以获胜 是则直接落子取胜
-        //for (int i = 0; i < 3; i++)
-        //{
-        //    int weight = GetWeight(board, i, 0) + GetWeight(board, i, 1) + GetWeight(board, i, 2);
-        //    if(weight == 2)
-        //    {
-        //        for (int j = 0; j < 3; j++)
-        //        {
-        //            if(GetWeight(board, i, j) == 0)
-        //            {
-        //                btMgr.RoundExec(this,i,j);
-        //                btMgr.RoundEnd();
-        //                return;
-        //            }
-        //        }
-        //    }
-
-        //    weight = GetWeight(board, 0, i) + GetWeight(board, 1, i) + GetWeight(board, 2, i);
-        //    if (weight == 2)
-        //    {
-        //        for (int j = 0; j < 3; j++)
-        //        {
-        //            if (GetWeight(board, j, i) == 0)
-        //            {
-        //                btMgr.RoundExec(this, j, i);
-        //                btMgr.RoundEnd();
-        //                return;
-        //            }
-        //        }
-        //    }
-        //}
-
-        ////判断对方是否可以获胜 是则直接落子防守
-        //for (int i = 0; i < 3; i++)
-        //{
-        //    int weight = GetWeight(board, i, 0) + GetWeight(board, i, 1) + GetWeight(board, i, 2);
-        //    if (weight == -2)
-        //    {
-        //        for (int j = 0; j < 3; j++)
-        //        {
-        //            if (GetWeight(board, i, j) == 0)
-        //            {
-        //                btMgr.RoundExec(this, i, j);
-        //                btMgr.RoundEnd();
-        //                return;
-        //            }
-        //        }
-        //    }
-
-        //    weight = GetWeight(board, 0, i) + GetWeight(board, 1, i) + GetWeight(board, 2, i);
-        //    if (weight == -2)
-        //    {
-        //        for (int j = 0; j < 3; j++)
-        //        {
-        //            if (GetWeight(board, j, i) == 0)
-        //            {
-        //                btMgr.RoundExec(this, j, i);
-        //                btMgr.RoundEnd();
-        //                return;
-        //            }
-        //        }
-        //    }
-        //}
 
         //根据策略落子
         for (int i = 0; i < 3; i++)
