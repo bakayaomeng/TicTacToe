@@ -40,6 +40,6 @@ public class UIPiece : MonoBehaviour
 
     private void OnClick()
     {
-        Singleton<SignalManager>.Get().Find<Signal_Battle__Exec>()?.Invoke(_indexX, _indexY);
+        Singleton<SignalManager>.Get().Find<Signal_UI__OnClickPiece>()?.Invoke(_indexX, _indexY);
     }
 }

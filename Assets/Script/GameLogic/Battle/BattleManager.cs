@@ -18,6 +18,13 @@ public class BattleManager : IDisposable
     private Player Player1;
     private Player Player2;
 
+    private Player Attacker;
+    private Player Defender;
+
+    public int CurRound => _curRound;
+    public GameModel GameModel => _gameModel;
+    public PieceState[,] ChessBoard => _chessBoard;
+
     public BattleManager()
     {
         _boardSize = GameDefine.BoardSize;
@@ -25,45 +32,90 @@ public class BattleManager : IDisposable
         _chessBoard = new PieceState[_boardSize,_boardSize];
         
         Singleton<SignalManager>.Get().Subscribe((Signal_Battle__Play)Callback_Battle__Play);
-        Singleton<SignalManager>.Get().Subscribe((Signal_Battle__Exec)Callback_Battle__Exec);
         Singleton<SignalManager>.Get().Subscribe((Signal_Battle__RePlay)Callback_Battle__RePlay);
     }
 
     public void Dispose()
     {
-        Singleton<SignalManager>.Get().Unsubscribe((Signal_Battle__Exec)Callback_Battle__Exec);
         Singleton<SignalManager>.Get().Unsubscribe((Signal_Battle__RePlay)Callback_Battle__RePlay);
     }
-   
-    private void Judge()
+
+    public bool RoundExec(Player player, int x, int y)
     {
-        if (_isPlaying == false)
+        if (_isPlaying == false || player == null || _chessBoard[x, y] != PieceState.Empty)
+        {
+            return false;
+        }
+
+        _chessBoard[x, y] = (PieceState)player.Role;
+        Singleton<SignalManager>.Get().Find<Signal_Battle__BoardChange>()?.Invoke(_chessBoard);
+
+        //胜负判定 
+        if (Judge(player))
+        {
+            //游戏结束
+            BattleEnd();
+        }
+        return true;
+    }
+
+    public void RoundEnd()
+    {
+        if (!_isPlaying)
         {
             return;
         }
 
+        _curRound++;
+        if (_curRound % 2 == 0)
+        {
+            Attacker.AllocationRound();
+        }
+        else
+        {
+            Defender.AllocationRound();
+        }
+    }
+
+    private bool Judge(Player player)
+    {
+        if (_isPlaying == false)
+        {
+            return false;
+        }
+
         for (int i = 0; i < 3; i++)
         {
-            if(_chessBoard[i, 0] != PieceState.Empty && _chessBoard[i,0] == _chessBoard[i,1] && _chessBoard[i, 1] == _chessBoard[i, 2])
+            if(_chessBoard[i, 0] != PieceState.Empty && _chessBoard[i, 0] == (PieceState)player.Role &&
+                _chessBoard[i,0] == _chessBoard[i,1] && _chessBoard[i, 1] == _chessBoard[i, 2])
             {
-                Singleton<SignalManager>.Get().Find<Signal_Battle__GameEnd>()?.Invoke(Player1);
+                Singleton<SignalManager>.Get().Find<Signal_Battle__GameEnd>()?.Invoke(player);
+                return true;
             }
-            if (_chessBoard[0, i] != PieceState.Empty && _chessBoard[0, i] == _chessBoard[1, i] && _chessBoard[0, i] == _chessBoard[2, i])
+            if (_chessBoard[0, i] != PieceState.Empty && _chessBoard[0, i] == (PieceState)player.Role &&
+                _chessBoard[0, i] == _chessBoard[1, i] && _chessBoard[0, i] == _chessBoard[2, i])
             {
-                Singleton<SignalManager>.Get().Find<Signal_Battle__GameEnd>()?.Invoke(Player2);
+                Singleton<SignalManager>.Get().Find<Signal_Battle__GameEnd>()?.Invoke(player);
+                return true;
             }
         }
 
-        if(_chessBoard[0, 0] != PieceState.Empty && _chessBoard[0, 0] == _chessBoard[1, 1] && _chessBoard[0, 0] == _chessBoard[2, 2] ||
-           _chessBoard[2, 0] != PieceState.Empty && _chessBoard[2, 0] == _chessBoard[1, 1] && _chessBoard[2, 0] == _chessBoard[0, 2])
+        if(_chessBoard[0, 0] != PieceState.Empty && _chessBoard[0, 0] == (PieceState)player.Role &&
+            _chessBoard[0, 0] == _chessBoard[1, 1] && _chessBoard[0, 0] == _chessBoard[2, 2] ||
+           _chessBoard[2, 0] != PieceState.Empty && _chessBoard[2, 0] == (PieceState)player.Role &&
+           _chessBoard[2, 0] == _chessBoard[1, 1] && _chessBoard[2, 0] == _chessBoard[0, 2])
         {
-            Singleton<SignalManager>.Get().Find<Signal_Battle__GameEnd>()?.Invoke(Player1);
+            Singleton<SignalManager>.Get().Find<Signal_Battle__GameEnd>()?.Invoke(player);
+            return true;
         }
 
-        if(_curRound == _maxRound)
+        if(_curRound == _maxRound - 1)
         {
             Singleton<SignalManager>.Get().Find<Signal_Battle__GameEnd>()?.Invoke(null);
+            return true;
         }
+
+        return false;
     }
 
     private void BattleStart()
@@ -71,6 +123,37 @@ public class BattleManager : IDisposable
         RefershChessBoard();
         _curRound = 0;
         _isPlaying = true;
+
+        if(_gameModel == GameModel.Pvp)
+        {
+            Player1.BattleStart(Role.Attacker);
+            Player2.BattleStart(Role.Defender);
+        }
+        else
+        {
+            int val = UnityEngine.Random.Range(0,100);
+            if(val > 50)
+            {
+                Attacker = Player1;
+                Defender = Player2;
+                Player1.BattleStart(Role.Attacker);
+                Player2.BattleStart(Role.Defender);
+            }
+            else
+            {
+                Attacker = Player2;
+                Defender = Player1;
+                Player1.BattleStart(Role.Defender);
+                Player2.BattleStart(Role.Attacker);
+            }
+        }
+
+        Attacker.AllocationRound();
+    }
+
+    private void BattleEnd()
+    {
+        _isPlaying = false;
     }
 
     private void RefershChessBoard()
@@ -83,43 +166,6 @@ public class BattleManager : IDisposable
             }
         }
         Singleton<SignalManager>.Get().Find<Signal_Battle__BoardChange>()?.Invoke(_chessBoard);
-    }
-
-    private void Callback_Battle__Exec(int x, int y)
-    {
-        if(_isPlaying == false)
-        {
-            return;
-        }
-
-        if(_gameModel == GameModel.Pve)
-        {
-            if ((Player2.Role == Role.Attacker && _curRound % 2 == 0) || 
-                (Player2.Role == Role.Defender && _curRound % 2 == 1))
-            {
-                return;
-            }
-        }
-
-        if (_chessBoard[x, y] != PieceState.Empty)
-        {
-            return;
-        }
-
-        if(_curRound % 2 == 0)
-        {
-            _chessBoard[x, y] = PieceState.Defender;
-        }
-        else
-        {
-            _chessBoard[x, y] = PieceState.Attacker;
-        }
-
-        _curRound++;
-
-        Singleton<SignalManager>.Get().Find<Signal_Battle__BoardChange>()?.Invoke(_chessBoard);
-
-        Judge();
     }
 
     private void Callback_Battle__RePlay()

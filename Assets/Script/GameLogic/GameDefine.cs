@@ -10,8 +10,8 @@ public static class GameDefine
 
 public enum Role
 {
-    Attacker,
-    Defender,
+    Attacker = PieceState.Attacker,
+    Defender = PieceState.Defender,
 }
 
 public enum GameModel
