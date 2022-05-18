@@ -21,14 +21,6 @@ public class UIManager : IDisposable
         }
     }
 
-    public void Close(UIBase uI)
-    {
-        if (_dicUI.ContainsKey(uI.Name))
-        {
-            _dicUI.Remove(uI.Name);
-        }
-    }
-
     public UIBase Get(string name)
     {
         if(_dicUI.ContainsKey(name))
@@ -40,6 +32,6 @@ public class UIManager : IDisposable
 
     public void Dispose()
     {
-        
+        _dicUI.Clear();
     }
 }

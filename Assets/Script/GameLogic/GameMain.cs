@@ -5,8 +5,6 @@ using UnityEngine;
 
 public class GameMain : MonoBehaviour
 {
-    private BattleManager _core;
-
     private void Awake()
     {
         DontDestroyOnLoad(gameObject);

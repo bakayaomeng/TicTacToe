@@ -18,8 +18,8 @@ public class BattleManager : IDisposable
     private Player _player1;
     private Player _player2;
 
-    private Player Attacker;
-    private Player Defender;
+    private Player _attacker;
+    private Player _defender;
 
     public int CurRound => _curRound;
     public GameModel GameModel => _gameModel;
@@ -74,11 +74,11 @@ public class BattleManager : IDisposable
         _curRound++;
         if (_curRound % 2 == 0)
         {
-            Attacker.AllocationRound();
+            _attacker.AllocationRound();
         }
         else
         {
-            Defender.AllocationRound();
+            _defender.AllocationRound();
         }
     }
 
@@ -131,8 +131,8 @@ public class BattleManager : IDisposable
 
         if(_gameModel == GameModel.Pvp)
         {
-            Attacker = _player1;
-            Defender = _player2;
+            _attacker = _player1;
+            _defender = _player2;
             _player1.BattleStart(Role.Attacker);
             _player2.BattleStart(Role.Defender);
         }
@@ -141,21 +141,21 @@ public class BattleManager : IDisposable
             int val = UnityEngine.Random.Range(0,100);
             if(val > 50)
             {
-                Attacker = _player1;
-                Defender = _player2;
+                _attacker = _player1;
+                _defender = _player2;
                 _player1.BattleStart(Role.Attacker);
                 _player2.BattleStart(Role.Defender);
             }
             else
             {
-                Attacker = _player2;
-                Defender = _player1;
+                _attacker = _player2;
+                _defender = _player1;
                 _player1.BattleStart(Role.Defender);
                 _player2.BattleStart(Role.Attacker);
             }
         }
 
-        Attacker.AllocationRound();
+        _attacker.AllocationRound();
 
         Singleton<SignalManager>.Get().Find<Signal_Battle__GameStart>()?.Invoke();
     }

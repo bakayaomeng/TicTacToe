@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 public delegate void Signal_UI__OnClickPiece(int x, int y);
 
