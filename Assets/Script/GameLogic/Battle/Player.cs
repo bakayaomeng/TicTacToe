@@ -22,12 +22,15 @@ public class Player : IDisposable
         { { 0,2}, { 1,1}, { 2,0} }, 
     };
 
-    public Player(string name, bool isAI)
+    public Player()
+    {
+        Singleton<SignalManager>.Get().Subscribe((Signal_UI__OnClickPiece)Callback_UI__OnClickPiece);
+    }
+
+    public void Init(string name, bool isAI)
     {
         _isAI = isAI;
         _name = name;
-
-        Singleton<SignalManager>.Get().Subscribe((Signal_UI__OnClickPiece)Callback_UI__OnClickPiece);
     }
 
     public void Dispose()
@@ -53,26 +56,27 @@ public class Player : IDisposable
     }
 
     /// <summary>
-    /// AI解算 逻辑判定优先级
+    /// AI出棋策略优先级
     /// 1.判断自己是否可以获胜 是则直接落子取胜
     /// 2.判断对方是否可以获胜 是则直接落子防守
     /// 3.根据综合策略落子（优先达成2*2等于必胜，优先2连等于强制对方落子）
+    /// 4.保底填空
     /// </summary>
     private void AiSolver()
     {
-        var btMgr = Singleton<BattleManager>.Get();
-        var board = btMgr.ChessBoard;
-
-        PieceState self = (PieceState)Role;
+        var BattleMgr = Singleton<BattleManager>.Get();
+        var board = BattleMgr.ChessBoard;
 
         //第一手随机出棋
-        if(btMgr.CurRound == 0)
+        if(BattleMgr.CurRound == 0)
         {
             int x = UnityEngine.Random.Range(0, 300) /100;
             int y = UnityEngine.Random.Range(0, 300) / 100;
-            btMgr.RoundExec(this, x,y);
-            btMgr.RoundEnd();
-            return;
+            if(BattleMgr.RoundExec(this, x, y))
+            {
+                BattleMgr.RoundEnd();
+                return;
+            }
         }
 
         //判断自己是否可以获胜 是则直接落子取胜
@@ -91,10 +95,9 @@ public class Player : IDisposable
                     wenY = WinPath[i, j, 1];
                 }
             }    
-            if(weight == 2)
+            if(weight == 2 && BattleMgr.RoundExec(this, winX, wenY))
             {
-                btMgr.RoundExec(this, winX, wenY);
-                btMgr.RoundEnd();
+                BattleMgr.RoundEnd();
                 return;
             }
         }
@@ -115,23 +118,47 @@ public class Player : IDisposable
                     wenY = WinPath[i, j, 1];
                 }
             }
-            if (weight == -2)
+            if (weight == -2 && BattleMgr.RoundExec(this, winX, wenY))
             {
-                btMgr.RoundExec(this, winX, wenY);
-                btMgr.RoundEnd();
+                BattleMgr.RoundEnd();
                 return;
             }
         }
 
-        //根据策略落子
+        //寻找组成2连的位置
+        for (int i = 0; i < 8; i++)
+        {
+            int weight = 0;
+            int winX = 0;
+            int wenY = 0;
+            for (int j = 0; j < 3; j++)
+            {
+                int value = GetWeight(board, WinPath[i, j, 0], WinPath[i, j, 1]);
+                weight += value;
+                if (value == 0)
+                {
+                    winX = WinPath[i, j, 0];
+                    wenY = WinPath[i, j, 1];
+                }
+            }
+            if (weight == 1)
+            {
+                if(BattleMgr.RoundExec(this, winX, wenY))
+                {
+                    BattleMgr.RoundEnd();
+                    return;
+                }
+            }
+        }
+
+        //保底
         for (int i = 0; i < 3; i++)
         {
             for (int j = 0; j < 3; j++)
             {
-                if(board[i,j] == PieceState.Empty)
+                if (board[i, j] == PieceState.Empty && BattleMgr.RoundExec(this, i, j))
                 {
-                    btMgr.RoundExec(this,i,j);
-                    btMgr.RoundEnd();
+                    BattleMgr.RoundEnd();
                     return;
                 }
             }

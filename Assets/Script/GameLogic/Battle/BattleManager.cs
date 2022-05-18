@@ -32,13 +32,16 @@ public class BattleManager : IDisposable
         _boardSize = GameDefine.BoardSize;
         _maxRound = _boardSize * _boardSize;
         _chessBoard = new PieceState[_boardSize,_boardSize];
-        
+        _player1 = new Player();
+        _player2 = new Player();
         Singleton<SignalManager>.Get().Subscribe((Signal_Battle__Play)Callback_Battle__Play);
         Singleton<SignalManager>.Get().Subscribe((Signal_Battle__RePlay)Callback_Battle__RePlay);
     }
 
     public void Dispose()
     {
+        _player1.Dispose();
+        _player2.Dispose();
         Singleton<SignalManager>.Get().Unsubscribe((Signal_Battle__RePlay)Callback_Battle__RePlay);
     }
 
@@ -185,13 +188,13 @@ public class BattleManager : IDisposable
 
         if (gameModel == GameModel.Pvp)
         {
-            _player1 = new Player("玩家1", false);
-            _player2 = new Player("玩家2", false);
+            _player1.Init("玩家1", false);
+            _player2.Init("玩家2", false);
         }
         else if (gameModel == GameModel.Pve)
         {
-            _player1 = new Player("玩家", false);
-            _player2 = new Player("电脑", true);
+            _player1.Init("玩家", false);
+            _player2.Init("电脑", true);
         }
         
         BattleStart();
